@@ -1,0 +1,2421 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Install necessary packages
+```{r, warning = FALSE, message = FALSE}
+install.packages("summarytools")
+library(DT)
+library(readr)
+library(ggplot2)
+library(knitr)
+library(hms)
+library(kableExtra)
+library(dplyr)
+library(magrittr)
+library(gridExtra)
+
+library(plotly)
+library(Hmisc)
+library(ggthemes)
+library(tidyr)
+library(sysfonts)
+font_add_google(name = "Amatic SC", family = "amatic-sc")
+
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(summarytools)
+```
+## Import datasets
+```{r, message=FALSE}
+vaccinations = read_csv("country_vaccinations.csv")
+world_population = read_csv("world_population_by_countries.csv")
+```
+## Dataset Preview
+```{r, message=FALSE}
+datatable(vaccinations, options = list(
+  searching = FALSE,
+  pageLength = 10,
+  lengthMenu = c(10, 10, 15, 20)
+))
+```
+```{r, message=FALSE}
+datatable(world_population, options = list(
+  searching = FALSE,
+  pageLength = 10,
+  lengthMenu = c(10, 10, 15, 20)
+))
+```
+## Descriptive Stats
+```{r}
+describe(vaccinations, descript = "Life Expectancy") %>% html()
+`````
+## Countrywise Plots
+
+Plot -- Vaccines per day | Percentage of vaccined population | Daily Vaccinations
+
+### Argentina - AR
+```{r, warning = FALSE}
+argentina <- vaccinations[grep("ARG", vaccinations$iso_code),]
+argentina_world_pop <- world_population[grep("Argentina", world_population$Country),]
+
+
+argentina$population = argentina_world_pop$Population
+argentina$percentage = (argentina$people_vaccinated/argentina$population)*100
+
+plot_argentina <- argentina %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇦🇷") +
+    scale_y_continuous(breaks = seq(0, 100000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_argentina_1 = plot_argentina
+plot_argentina_1 = plot_argentina_1 + ggtitle("Population Vaccinated on \n Argentina (2021)") + 
+    theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+
+plot_argentina_percentage <- argentina %>%
+  ggplot( aes(x=date, y=percentage, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇦🇷") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_argentina_2 = plot_argentina_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_argentina_2 = plot_argentina_2 + ggtitle("Population (%) Vaccinated \n on Argentina") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+
+plot_argentina_daily_vac <- argentina %>%
+  ggplot( aes(x=date, y=daily_vaccinations)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇦🇷") +
+    scale_y_continuous(breaks = seq(0, 100000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+
+plot_argentina_interactive <- plot_ly(x = argentina$date, y = argentina$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+plot_argentina_interactive2 <- plot_ly(x = argentina$date, y = argentina$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_argentina_interactive3 <- plot_ly(x = argentina$date, y = argentina$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+
+plotly::subplot(plot_argentina_interactive,plot_argentina_interactive2,plot_argentina_interactive3, nrows=1 , margin= 0.05)
+```
+
+### Austria - AT
+```{r, warning = FALSE}
+austria <- vaccinations[grep("AUT", vaccinations$iso_code),]
+austria_world_pop <- world_population[grep("Austria", world_population$Country),]
+
+austria$population = austria_world_pop$Population
+austria$percentage = (austria$people_vaccinated/austria$population)*100
+
+plot_austria <- austria %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇦🇹") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_austria_1 = plot_austria+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_austria_1 = plot_austria_1 + ggtitle("Population Vaccinated on \n Austria (2021)")
+
+plot_austria_percentage <- austria %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇦🇹") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_austria_2 = plot_austria_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_austria_2 = plot_austria_2 + ggtitle("Population (%) Vaccinated \n on Austria") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_austria_interactive <- plot_ly(x = austria$date, y = austria$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+plot_austria_interactive2 <- plot_ly(x = austria$date, y = austria$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_austria_interactive3 <- plot_ly(x = austria$date, y = austria$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_austria_interactive,plot_austria_interactive2,plot_austria_interactive3, nrows=1 , margin= 0.05)
+```
+
+### Bahrain - BH
+```{r, warning = FALSE}
+bahrain <- vaccinations[grep("BHR", vaccinations$iso_code),]
+bahrain_world_pop <- world_population[grep("Bahrain", world_population$Country),]
+
+bahrain$population = bahrain_world_pop$Population
+bahrain$percentage = (bahrain$people_vaccinated/bahrain$population)*100
+
+
+bahrain$percentage[is.na(bahrain$percentage)] <- round(mean(bahrain$percentage, na.rm = TRUE))
+
+plot_bahrain <- bahrain %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇧🇭") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_bahrain_1 = plot_bahrain+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_bahrain_1 = plot_bahrain_1 + ggtitle("Population (%) \n Vaccinated on \n Bahrain (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_bahrain_percentage <- bahrain %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇧🇭") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_bahrain_2 = plot_bahrain_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_bahrain_2 = plot_bahrain_2 + ggtitle("Population Vaccinated \n on Bahrain") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_bahrain_interactive <- plot_ly(x = bahrain$date, y = bahrain$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+plot_bahrain_interactive2 <- plot_ly(x = bahrain$date, y = bahrain$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_bahrain_interactive3 <- plot_ly(x = bahrain$date, y = bahrain$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+
+plotly::subplot(plot_bahrain_interactive,plot_bahrain_interactive2,plot_bahrain_interactive3, nrows=1 , margin = 0.05)
+```
+
+### Belgium - BE
+```{r, warning = FALSE}
+belgium <- vaccinations[grep("BEL", vaccinations$iso_code),]
+belgium_world_pop <- world_population[grep("Belgium", world_population$Country),]
+
+belgium$population = belgium_world_pop$Population
+belgium$percentage = (belgium$people_vaccinated/belgium$population)*100
+plot_belgium <- belgium %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇧🇪") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_belgium_1 = plot_belgium+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_belgium_1 = plot_belgium_1 + ggtitle("Population (%) \n Vaccinated on \n Belgium (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_belgium_percentage <- belgium %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇧🇪") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_belgium_2 = plot_belgium_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_belgium_2 = plot_belgium_2 + ggtitle("Population (%) Vaccinated \n on Belgium") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_belgium_interactive <- plot_ly(x = belgium$date, y = belgium$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_belgium_interactive2 <- plot_ly(x = belgium$date, y = belgium$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_belgium_interactive3 <- plot_ly(x = belgium$date, y = belgium$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_belgium_interactive,plot_belgium_interactive2,plot_belgium_interactive3, nrows=1 , margin = 0.05)
+```
+
+### Brazil - BR
+```{r, warning = FALSE}
+brazil <- vaccinations[grep("BRA", vaccinations$iso_code),]
+brazil_world_pop <- world_population[grep("Brazil", world_population$Country),]
+
+brazil$population = brazil_world_pop$Population
+brazil$percentage = (brazil$people_vaccinated/brazil$population)*100
+plot_brazil <- brazil %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇧🇷") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_brazil_1 = plot_brazil+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_brazil_1 = plot_brazil_1 + ggtitle("Population (%) \n Vaccinated on \n Brazil (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_brazil_percentage <- brazil %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇧🇷") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_brazil_2 = plot_brazil_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_brazil_2 = plot_brazil_2 + ggtitle("Population (%) Vaccinated \n on Brazil") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_brazil_interactive <- plot_ly(x = brazil$date, y = brazil$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_brazil_interactive2 <- plot_ly(x = brazil$date, y = brazil$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_brazil_interactive3 <- plot_ly(x = brazil$date, y = brazil$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_brazil_interactive,plot_brazil_interactive2,plot_brazil_interactive3, nrows=1 , margin = 0.05)
+```
+
+### Bulgaria - BG
+```{r, warning = FALSE}
+bulgaria <- vaccinations[grep("BGR", vaccinations$iso_code),]
+bulgaria_world_pop <- world_population[grep("Bulgaria", world_population$Country),]
+
+bulgaria$population = bulgaria_world_pop$Population
+bulgaria$percentage = (bulgaria$people_vaccinated/bulgaria$population)*100
+plot_bulgaria <- bulgaria %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇧🇬") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_bulgaria_1 = plot_bulgaria+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_bulgaria_1 = plot_bulgaria_1 + ggtitle("Population Vaccinated on  \n Bulgaria (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_bulgaria_percentage <- bulgaria %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇧🇬") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_bulgaria_2 = plot_bulgaria_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_bulgaria_2 = plot_bulgaria_2 + ggtitle("Population (%) Vaccinated \n on Bulgaria") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+    
+plot_bulgaria_interactive <- plot_ly(x = bulgaria$date, y = bulgaria$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_bulgaria_interactive2 <- plot_ly(x = bulgaria$date, y = bulgaria$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_bulgaria_interactive3 <- plot_ly(x = bulgaria$date, y = bulgaria$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_bulgaria_interactive,plot_bulgaria_interactive2,plot_bulgaria_interactive3, nrows=1 , margin=0.05)
+```
+
+### Canada - CA
+```{r, warning = FALSE}
+canada <- vaccinations[grep("CAN", vaccinations$iso_code),]
+canada_world_pop <- world_population[grep("Canada", world_population$Country),]
+
+canada$population = canada_world_pop$Population
+canada$percentage = (canada$people_vaccinated/canada$population)*100
+plot_canada <- canada %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇦") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_canada_1 = plot_canada+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_canada_1 = plot_canada_1 + ggtitle("Population (%) Vaccinated on Canada (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_canada_percentage <- canada %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇦") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_canada_2 = plot_canada_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_canada_1 = plot_canada_1 + ggtitle("Population Vaccinated \n on Canada") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_canada_interactive <- plot_ly(x = canada$date, y = canada$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_canada_interactive2 <- plot_ly(x = canada$date, y = canada$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_canada_interactive3 <- plot_ly(x = canada$date, y = canada$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_canada_interactive,plot_canada_interactive2,plot_canada_interactive3 ,nrows=1 , margin = 0.05)
+```
+
+### Chile - CL
+```{r, warning = FALSE}
+chile <- vaccinations[grep("CHL", vaccinations$iso_code),]
+chile_world_pop <- world_population[grep("Chile", world_population$Country),]
+
+chile$population = chile_world_pop$Population
+chile$percentage = (chile$people_vaccinated/chile$population)*100
+plot_chile<- chile %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇱") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_chile_1 = plot_chile+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_chile_1 = plot_chile_1 + ggtitle("Population Vaccinated on Chile (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_chile_percentage <- chile %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇱") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_chile_2 = plot_chile_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_chile_2 = plot_chile_2 + ggtitle("Population Vaccinated(%) \n  on Chile") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_chile_interactive <- plot_ly(x = chile$date, y = chile$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_chile_interactive2 <- plot_ly(x = chile$date, y = chile$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_chile_interactive3 <- plot_ly(x = chile$date, y = chile$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_chile_interactive,plot_chile_interactive2,plot_chile_interactive3, nrows=1 , margin = 0.05)
+```
+
+### China - CN
+```{r, warning = FALSE}
+china <- vaccinations[grep("CHN", vaccinations$iso_code),]
+china_world_pop <- world_population[grep("China", world_population$Country),]
+
+china$population = china_world_pop$Population
+china$percentage = (china$people_vaccinated/china$population)*100
+plot_china <- china %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇳") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_china_1 = plot_china+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_china_1 = plot_china_1 + ggtitle("Population Vaccinated on China (2020/21)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_china_percentage <- china %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇳") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_china_2 = plot_china_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_china_2 = plot_china_2 + ggtitle("Population (%) Vaccinated \n on China") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_china_interactive <- plot_ly(x = china$date, y = china$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_china_interactive2 <- plot_ly(x = china$date, y = china$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_china_interactive3 <- plot_ly(x = china$date, y = china$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_china_interactive,plot_china_interactive2,plot_china_interactive3, nrows=1 , margin = 0.05)
+````
+
+### Costa Rica - CR
+```{r, warning = FALSE}
+costa_rica <- vaccinations[grep("CRI", vaccinations$iso_code),]
+costa_rica_world_pop <- world_population[grep("Costa Rica", world_population$Country),]
+
+costa_rica$population = costa_rica_world_pop$Population
+costa_rica$percentage = (costa_rica$people_vaccinated/costa_rica$population)*100
+
+
+
+plot_costa_rica <- costa_rica %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇷") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_costa_rica_1 = plot_costa_rica+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_costa_rica_1 = plot_costa_rica_1 + ggtitle("Population (%) Vaccinated \n on Costa Rica") + 
+    theme(plot.title = element_text(size = 6, face = "bold"))
+
+plot_costa_rica_percentage <- costa_rica %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇷") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_costa_rica_2 = plot_costa_rica_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_costa_rica_2 = plot_costa_rica_2 + ggtitle("Population (%) Vaccinated \non  Costa Rica") + 
+    theme(plot.title = element_text(size = 6, face = "bold"))
+
+plot_costa_rica_interactive <- plot_ly(x = costa_rica$date, y = costa_rica$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_costa_rica_interactive2 <- plot_ly(x = costa_rica$date, y = costa_rica$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_costa_rica_interactive3 <- plot_ly(x = costa_rica$date, y = costa_rica$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_costa_rica_interactive,plot_costa_rica_interactive2,plot_costa_rica_interactive3, nrows=1 ,margin = 0.05)
+```
+
+### Croatia - HR
+```{r, warning = FALSE}
+croatia <- vaccinations[grep("HRV", vaccinations$iso_code),]
+croatia_world_pop <- world_population[grep("Croatia", world_population$Country),]
+
+croatia$population = croatia_world_pop$Population
+croatia$percentage = (croatia$people_vaccinated/croatia$population)*100
+plot_croatia <- croatia %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇭🇷") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_croatia_1 = plot_croatia+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_croatia_1 = plot_croatia_1 + ggtitle("Population Vaccinated \n on Croatia (2021)") + 
+    theme(plot.title = element_text(size = 6, face = "bold"))
+
+plot_croatia_percentage <- croatia %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇭🇷") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_croatia_2 = plot_croatia_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_croatia_2 = plot_croatia_2 + ggtitle("Population (%) Vaccinated on Croatia") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_croatia_interactive <- plot_ly(x = croatia$date, y = croatia$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_croatia_interactive2 <- plot_ly(x = croatia$date, y = croatia$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_croatia_interactive3 <- plot_ly(x = croatia$date, y = croatia$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_croatia_interactive,plot_croatia_interactive2,plot_croatia_interactive3, nrows=1)
+```
+
+### Cyprus - CY
+```{r, warning = FALSE}
+cyprus <- vaccinations[grep("CYP", vaccinations$iso_code),]
+cyprus_world_pop <- world_population[grep("Cyprus", world_population$Country),]
+
+cyprus$population = cyprus_world_pop$Population
+cyprus$percentage = (cyprus$people_vaccinated/cyprus$population)*100
+plot_cyprus <- cyprus %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇾") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_cyprus_1 = plot_cyprus+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_cyprus_1 = plot_cyprus_1 + ggtitle("Population Vaccinated \n on Cyprus (2021)") + 
+    theme(plot.title = element_text(size = 6, face = "bold"))
+
+plot_cyprus_percentage <- cyprus %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇾") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_cyprus_2 = plot_cyprus_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_cyprus_2 = plot_cyprus_2 + ggtitle("Population (%) Vaccinated on Cyprus") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_cyprus_interactive <- plot_ly(x = cyprus$date, y = cyprus$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_cyprus_interactive2 <- plot_ly(x = cyprus$date, y = cyprus$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_cyprus_interactive3 <- plot_ly(x = cyprus$date, y = cyprus$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_cyprus_interactive,plot_cyprus_interactive2,plot_cyprus_interactive3, nrows=1)
+```
+
+### Czech Republic - CZ
+```{r, warning = FALSE}
+czech_rep <- vaccinations[grep("CZE", vaccinations$iso_code),]
+czech_rep_world_pop <- world_population[grep("Czech", world_population$Country),]
+
+czech_rep$population = czech_rep_world_pop$Population
+czech_rep$percentage = (czech_rep$people_vaccinated/czech_rep$population)*100
+
+plot_czech_rep <- czech_rep %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇿") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_czech_rep_1 = plot_czech_rep+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_czech_rep_1 = plot_czech_rep_1 + ggtitle("Population Vaccinated \n on Czech Rep. (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_czech_rep_percentage <- czech_rep %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇨🇿") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_czech_rep_2 = plot_czech_rep_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_czech_rep_2 = plot_czech_rep_2 + ggtitle("Population (%) Vaccinated \n on Czech Rep.") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_czech_rep_interactive <- plot_ly(x = czech_rep$date, y = czech_rep$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_czech_rep_interactive2 <- plot_ly(x = czech_rep$date, y = czech_rep$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_czech_rep_interactive3 <- plot_ly(x = czech_rep$date, y = czech_rep$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_czech_rep_interactive,plot_czech_rep_interactive2,plot_czech_rep_interactive3, nrows=1)
+```
+
+### Denmark - DK
+```{r, warning = FALSE}
+denmark <- vaccinations[grep("DNK", vaccinations$iso_code),]
+denmark_world_pop <- world_population[grep("Denmark", world_population$Country),]
+
+denmark$population = denmark_world_pop$Population
+denmark$percentage = (denmark$people_vaccinated/denmark$population)*100
+plot_denmark <- denmark %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇩🇰") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+    
+plot_denmark_1 = plot_denmark+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_denmark_1 = plot_denmark_1 + ggtitle("Population Vaccinated on Denmark (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_denmark_percentage <- denmark %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇩🇰") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_denmark_2 = plot_denmark_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_denmark_2 = plot_denmark_2 + ggtitle("Population (%) Vaccinated \n on Denmark") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_denmark_interactive <- plot_ly(x = denmark$date, y = denmark$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_denmark_interactive2 <- plot_ly(x = denmark$date, y = denmark$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_denmark_interactive3 <- plot_ly(x = denmark$date, y = denmark$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_denmark_interactive,plot_denmark_interactive2,plot_denmark_interactive3, nrows=1)
+```
+
+### Estonia - EE
+```{r, warning = FALSE}
+estonia <- vaccinations[grep("EST", vaccinations$iso_code),]
+estonia_world_pop <- world_population[grep("Estonia", world_population$Country),]
+
+estonia$population = estonia_world_pop$Population
+estonia$percentage = (estonia$people_vaccinated/estonia$population)*100
+plot_estonia <- estonia %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇪🇪") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_estonia_1 = plot_estonia+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_estonia_1 = plot_estonia_1 + ggtitle("Population Vaccinated \n on Estonia (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_estonia_percentage <- estonia %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇪🇪") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_estonia_2 = plot_estonia_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_estonia_2 = plot_estonia_2 + ggtitle("Population (%) Vaccinated \n on Estonia") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_estonia_interactive <- plot_ly(x = estonia$date, y = estonia$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_estonia_interactive2 <- plot_ly(x = estonia$date, y = estonia$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_estonia_interactive3 <- plot_ly(x = estonia$date, y = estonia$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_estonia_interactive,plot_estonia_interactive2,plot_estonia_interactive3, nrows=1)
+```
+
+### Finland - FI
+```{r, warning = FALSE}
+finland <- vaccinations[grep("FIN", vaccinations$iso_code),]
+finland_world_pop <- world_population[grep("Finland", world_population$Country),]
+
+finland$population = finland_world_pop$Population
+finland$percentage = (finland$people_vaccinated/finland$population)*100
+plot_finland <- finland %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇫🇮") +
+    scale_y_continuous(breaks = seq(0, 100, 20),limits = c(0, 100))+
+    theme_wsj()
+    
+plot_finland_1 = plot_finland+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_finland_1 = plot_finland_1 + ggtitle("Population (%) Vaccinated \n on Finland (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_finland_percentage <- finland %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇫🇮") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_finland_2 = plot_finland_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_finland_2 = plot_finland_2 + ggtitle("Population (%) Vaccinated\n on Finland") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_finland_interactive <- plot_ly(x = finland$date, y = finland$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_finland_interactive2 <- plot_ly(x = finland$date, y = finland$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_finland_interactive3 <- plot_ly(x = finland$date, y = finland$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_finland_interactive,plot_finland_interactive2,plot_finland_interactive3, nrows=1)
+```
+
+### France - FR
+```{r, warning = FALSE}
+france <- vaccinations[grep("FRA", vaccinations$iso_code),]
+france_world_pop <- world_population[grep("France", world_population$Country),]
+
+france$population = france_world_pop$Population
+france$percentage = (france$people_vaccinated/france$population)*100
+plot_france <- france %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇫🇷") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_france_1 = plot_france+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_france_1 = plot_france_1 + ggtitle("Population Vaccinated \n on France (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_france_percentage <- france %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇫🇷") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_france_2 = plot_france_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_france_2 = plot_france_2 + ggtitle("Population (%) Vaccinated \n on France") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_france_interactive <- plot_ly(x = france$date, y = france$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_france_interactive2 <- plot_ly(x = france$date, y = france$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_france_interactive3 <- plot_ly(x = france$date, y = france$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_france_interactive,plot_france_interactive2,plot_france_interactive3, nrows=1)
+```
+
+### Germany - DE
+```{r, warning = FALSE}
+germany <- vaccinations[grep("DEU", vaccinations$iso_code),]
+germany_world_pop <- world_population[grep("Germany", world_population$Country),]
+
+germany$population = germany_world_pop$Population
+germany$percentage = (germany$people_vaccinated/germany$population)*100
+plot_germany <- germany %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇩🇪") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_germany_1 = plot_germany+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_germany_1 = plot_germany_1 + ggtitle("Population Vaccinated \n on Germany (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_germany_percentage <- germany %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇩🇪") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_germany_2 = plot_germany_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_germany_2 = plot_germany_2 + ggtitle("Population (%) Vaccinated \n on Germany") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_germany_interactive <- plot_ly(x = germany$date, y = germany$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_germany_interactive2 <- plot_ly(x = germany$date, y = germany$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_germany_interactive3 <- plot_ly(x = germany$date, y = germany$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_germany_interactive,plot_germany_interactive2,plot_germany_interactive3, nrows=1)
+```
+
+### Gibraltar - GI
+```{r, warning = FALSE}
+gibraltar <- vaccinations[grep("GIB", vaccinations$iso_code),]
+gibraltar_world_pop <- world_population[grep("Gibraltar", world_population$Country),]
+
+gibraltar$population = gibraltar_world_pop$Population
+gibraltar$percentage = (gibraltar$people_vaccinated/gibraltar$population)*100
+
+plot_gibraltar <- gibraltar %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇬🇮") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_gibraltar_1 = plot_gibraltar+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_gibraltar_1 = plot_gibraltar_1 + ggtitle("Population Vaccinated on Gibraltar (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_gibraltar_percentage <- gibraltar %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇬🇮") +
+    scale_y_continuous(breaks = seq(0, 40, 10),limits = c(0, 40))+
+    theme_wsj()
+
+plot_gibraltar_2 = plot_gibraltar_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_gibraltar_2 = plot_gibraltar_2 + ggtitle("Population (%) Vaccinated \n on Gibraltar") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_gibraltar_interactive <- plot_ly(x = gibraltar$date, y = gibraltar$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_gibraltar_interactive2 <- plot_ly(x = gibraltar$date, y = gibraltar$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_gibraltar_interactive3 <- plot_ly(x = gibraltar$date, y = gibraltar$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_gibraltar_interactive,plot_gibraltar_interactive2,plot_gibraltar_interactive3, nrows=1)
+```
+
+### Greece - GR
+```{r, warning = FALSE}
+greece <- vaccinations[grep("GRC", vaccinations$iso_code),]
+greece_world_pop <- world_population[grep("Greece", world_population$Country),]
+
+greece$population = greece_world_pop$Population
+greece$percentage = (greece$people_vaccinated/greece$population)*100
+
+plot_greece <- greece %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇬🇷") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_greece_1 = plot_greece+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_greece_1 = plot_greece_1 + ggtitle("Population Vaccinated \n on Greece (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_greece_percentage <- greece %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇬🇷") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_greece_2 = plot_greece_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_greece_2 = plot_greece_2 + ggtitle("Population (%) Vaccinated \n on Greece") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_greece_interactive <- plot_ly(x = greece$date, y = greece$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_greece_interactive2 <- plot_ly(x = greece$date, y = greece$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_greece_interactive3 <- plot_ly(x = greece$date, y = greece$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_greece_interactive,plot_greece_interactive2,plot_greece_interactive3, nrows=1)
+```
+
+### Hungary - HU
+```{r, warning = FALSE}
+hungary <- vaccinations[grep("HUN", vaccinations$iso_code),]
+hungary_world_pop <- world_population[grep("Hungary", world_population$Country),]
+
+hungary$population = hungary_world_pop$Population
+hungary$percentage = (hungary$people_vaccinated/hungary$population)*100
+
+plot_hungary <- hungary %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇭🇺") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_hungary_1 = plot_hungary + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_hungary_1 = plot_hungary_1 + ggtitle("Population (%) Vaccinated \n on Hungary (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_hungary_percentage <- hungary %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇭🇺") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_hungary_2 = plot_hungary_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_hungary_2 = plot_hungary_2 + ggtitle("Population (%) Vaccinated \n on Hungary") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_hungary_interactive <- plot_ly(x = hungary$date, y = hungary$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_hungary_interactive2 <- plot_ly(x = hungary$date, y = hungary$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_hungary_interactive3 <- plot_ly(x = hungary$date, y = hungary$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_hungary_interactive,plot_hungary_interactive2, plot_hungary_interactive3,nrows=1)
+```
+
+### Iceland - IS
+```{r, warning = FALSE}
+iceland <- vaccinations[grep("ISL", vaccinations$iso_code),]
+iceland_world_pop <- world_population[grep("Iceland", world_population$Country),]
+
+iceland$population = iceland_world_pop$Population
+iceland$percentage = (iceland$people_vaccinated/iceland$population)*100
+
+plot_iceland <- iceland %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇸") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_iceland_1 = plot_iceland + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_iceland_1 = plot_iceland_1 + ggtitle("Population Vaccinated on Iceland (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_iceland_percentage <- iceland %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇸") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_iceland_2 = plot_iceland_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_iceland_2 = plot_iceland_2 + ggtitle("Population (%) Vaccinated \n on Iceland") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_iceland_interactive <- plot_ly(x = iceland$date, y = iceland$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_iceland_interactive2 <- plot_ly(x = iceland$date, y = iceland$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_iceland_interactive3 <- plot_ly(x = iceland$date, y = iceland$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_iceland_interactive,plot_iceland_interactive2,plot_iceland_interactive3 ,nrows=1)
+```
+
+### India - IN
+```{r, warning = FALSE}
+india <- vaccinations[grep("IND", vaccinations$iso_code),]
+india_world_pop <- world_population[grep("India", world_population$Country),]
+
+india$population = india_world_pop$Population
+india$percentage = (india$people_vaccinated/india$population)*100
+
+
+plot_india <- india %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇳") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_india_1 = plot_india + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_india_1 = plot_india_1 + ggtitle("Population Vaccinated on India (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_india_percentage <- india %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇳") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_india_2 = plot_india_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_india_2 = plot_india_2 + ggtitle("Population (%) Vaccinated \n on India (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_india_interactive <- plot_ly(x = india$date, y = india$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_india_interactive2 <- plot_ly(x = india$date, y = india$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_india_interactive3 <- plot_ly(x = india$date, y = india$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_india_interactive,plot_india_interactive2,plot_india_interactive3, nrows=1)
+```
+
+### Indonesia - ID
+```{r, warning = FALSE}
+indonesia <- vaccinations[grep("IDN", vaccinations$iso_code),]
+indonesia_world_pop <- world_population[grep("Indonesia", world_population$Country),]
+
+indonesia$population = indonesia_world_pop$Population
+indonesia$percentage = (indonesia$people_vaccinated/indonesia$population)*100
+
+
+plot_indonesia <- indonesia %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇩") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_indonesia_1 = plot_indonesia + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_indonesia_1 = plot_indonesia_1 + ggtitle("Population Vaccinated on Indonesia (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_indonesia_percentage <- indonesia %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇩") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_indonesia_2 = plot_indonesia_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_indonesia_2 = plot_indonesia_2 + ggtitle("Population (%) Vaccinated \n on Indonesia (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_indonesia_interactive <- plot_ly(x = indonesia$date, y = indonesia$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_indonesia_interactive2 <- plot_ly(x = indonesia$date, y = indonesia$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_indonesia_interactive3 <- plot_ly(x = indonesia$date, y = indonesia$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_indonesia_interactive,plot_indonesia_interactive2,plot_indonesia_interactive3, nrows=1)
+
+```
+
+### Ireland - IE
+```{r, warning = FALSE}
+ireland <- vaccinations[grep("IRL", vaccinations$iso_code),]
+ireland_world_pop <- world_population[grep("Ireland", world_population$Country),]
+
+ireland$population = ireland_world_pop$Population
+ireland$percentage = (ireland$people_vaccinated/ireland$population)*100
+
+
+plot_ireland <- ireland %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇪") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_ireland_1 = plot_ireland + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_ireland_1 = plot_ireland_1 + ggtitle("Population Vaccinated \n on Ireland (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_ireland_percentage <- ireland %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇪") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_ireland_2 = plot_ireland_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_ireland_2 = plot_ireland_2 + ggtitle("Population (%) Vaccinated \n on Ireland (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_ireland_interactive <- plot_ly(x = ireland$date, y = ireland$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_ireland_interactive2 <- plot_ly(x = ireland$date, y = ireland$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_ireland_interactive3 <- plot_ly(x = ireland$date, y = ireland$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_ireland_interactive,plot_ireland_interactive2,plot_ireland_interactive3, nrows=1)
+```
+
+### Israel - IL
+```{r, warning = FALSE}
+israel <- vaccinations[grep("ISR", vaccinations$iso_code),]
+israel_world_pop <- world_population[grep("Israel", world_population$Country),]
+
+israel$population = israel_world_pop$Population
+israel$percentage = (israel$people_vaccinated/israel$population)*100
+
+
+plot_israel <- israel %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇱") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_israel_1 = plot_israel + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_israel_1 = plot_israel_1 + ggtitle("Population Vaccinated \n on Israel (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_israel_percentage <- israel %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇱") +
+    scale_y_continuous(breaks = seq(0, 40, 5),limits = c(0, 40))+
+    theme_wsj()
+
+plot_israel_2 = plot_israel_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_israel_2 = plot_israel_2 + ggtitle("Population (%) Vaccinated \n on Israel (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_israel_interactive <- plot_ly(x = israel$date, y = israel$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_israel_interactive2 <- plot_ly(x = israel$date, y = israel$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_israel_interactive3 <- plot_ly(x = israel$date, y = israel$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_israel_interactive,plot_israel_interactive2,plot_israel_interactive3, nrows=1)
+```
+
+### Italy - IT
+```{r, warning = FALSE}
+italy <- vaccinations[grep("ITA", vaccinations$iso_code),]
+italy_world_pop <- world_population[grep("Italy", world_population$Country),]
+
+italy$population = italy_world_pop$Population
+italy$percentage = (italy$people_vaccinated/italy$population)*100
+
+
+plot_italy <- italy %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇹") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_italy_1 = plot_italy + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_italy_1 = plot_italy_1 + ggtitle("Population Vaccinated \n on Italy(2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_italy_percentage <- italy %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇮🇹") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_italy_2 = plot_italy_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_italy_2 = plot_italy_2 + ggtitle("Population (%) Vaccinated \n on Italy (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_italy_interactive <- plot_ly(x = italy$date, y = italy$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_italy_interactive2 <- plot_ly(x = italy$date, y = italy$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_italy_interactive3 <- plot_ly(x = italy$date, y = italy$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_italy_interactive,plot_italy_interactive2,plot_italy_interactive3, nrows=1)
+```
+
+### Kuwait - KW
+```{r, warning = FALSE}
+kuwait <- vaccinations[grep("KWT", vaccinations$iso_code),]
+kuwait_world_pop <- world_population[grep("Kuwait", world_population$Country),]
+
+kuwait$population = kuwait_world_pop$Population
+kuwait$percentage = (kuwait$people_vaccinated/kuwait$population)*100
+
+
+plot_kuwait <- kuwait %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇰🇼") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_kuwait_1 = plot_kuwait + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_kuwait_1 = plot_kuwait_1 + ggtitle("Population Vaccinated \n on Kuwait(2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_kuwait_percentage <- kuwait %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇰🇼") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_kuwait_2 = plot_kuwait_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_kuwait_2 = plot_kuwait_2 + ggtitle("Population (%) Vaccinated \n on Kuwait (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_kuwait_interactive <- plot_ly(x = kuwait$date, y = kuwait$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_kuwait_interactive2 <- plot_ly(x = kuwait$date, y = kuwait$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_kuwait_interactive3 <- plot_ly(x = kuwait$date, y = kuwait$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_kuwait_interactive,plot_kuwait_interactive2,plot_kuwait_interactive3, nrows=1)
+```
+
+### Latvia - LV
+```{r, warning = FALSE}
+latvia <- vaccinations[grep("LVA", vaccinations$iso_code),]
+latvia_world_pop <- world_population[grep("Latvia", world_population$Country),]
+
+latvia$population = latvia_world_pop$Population
+latvia$percentage = (latvia$people_vaccinated/latvia$population)*100
+
+
+plot_latvia <- latvia %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇱🇻") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_latvia_1 = plot_latvia + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_latvia_1 = plot_latvia_1 + ggtitle("Population Vaccinated \n on Italy (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_latvia_percentage <- latvia %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇱🇻") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_latvia_2 = plot_latvia_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_latvia_2 = plot_latvia_2 + ggtitle("Population (%) Vaccinated \n on Latvia ") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_latvia_interactive <- plot_ly(x = latvia$date, y = latvia$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_latvia_interactive2 <- plot_ly(x = latvia$date, y = latvia$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_latvia_interactive3 <- plot_ly(x = latvia$date, y = latvia$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_latvia_interactive,plot_latvia_interactive2,plot_latvia_interactive3, nrows=1)
+```
+
+### Lithuania - LT
+```{r, warning = FALSE}
+lithuania <- vaccinations[grep("LTU", vaccinations$iso_code),]
+lithuania_world_pop <- world_population[grep("Lithuania", world_population$Country),]
+
+lithuania$population = lithuania_world_pop$Population
+lithuania$percentage = (lithuania$people_vaccinated/lithuania$population)*100
+
+
+plot_lithuania <- lithuania %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇱🇹") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_lithuania_1 = plot_lithuania + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_lithuania_1 = plot_lithuania_1 + ggtitle("Population Vaccinated \n on Lithuania ") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_lithuania_percentage <- lithuania %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇱🇹") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_lithuania_2 = plot_lithuania_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_lithuania_2 = plot_lithuania_2 + ggtitle("Population (%) Vaccinated \n on Lithuania (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_lithuania_interactive <- plot_ly(x = lithuania$date, y = lithuania$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_lithuania_interactive2 <- plot_ly(x = lithuania$date, y = lithuania$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_lithuania_interactive3 <- plot_ly(x = lithuania$date, y = lithuania$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_lithuania_interactive,plot_lithuania_interactive2,plot_lithuania_interactive3, nrows=1)
+```
+
+### Luxemberg - LU
+```{r, warning = FALSE}
+luxembourg <- vaccinations[grep("LUX", vaccinations$iso_code),]
+luxembourg_world_pop <- world_population[grep("Luxembourg", world_population$Country),]
+
+luxembourg$population = luxembourg_world_pop$Population
+luxembourg$percentage = (luxembourg$people_vaccinated/luxembourg$population)*100
+
+
+plot_luxembourg <- luxembourg %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇱🇺") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_luxembourg_1 = plot_luxembourg + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_luxembourg_1 = plot_luxembourg_1 + ggtitle("Population Vaccinated \n on Luxembourg") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_luxembourg_percentage <- italy %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇱🇺") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_luxembourg_2 = plot_luxembourg_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_luxembourg_2 = plot_luxembourg_2 + ggtitle("Population (%) Vaccinated \n on Luxembourg") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_luxembourg_interactive <- plot_ly(x = luxembourg$date, y = luxembourg$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_luxembourg_interactive2 <- plot_ly(x = luxembourg$date, y = luxembourg$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_luxembourg_interactive3 <- plot_ly(x = luxembourg$date, y = luxembourg$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_luxembourg_interactive,plot_luxembourg_interactive2,plot_luxembourg_interactive3, nrows=1)
+```
+
+### Malta -  MT
+```{r, warning = FALSE}
+malta <- vaccinations[grep("MLT", vaccinations$iso_code),]
+malta_world_pop <- world_population[grep("Malta", world_population$Country),]
+
+malta$population = malta_world_pop$Population
+malta$percentage = (malta$people_vaccinated/malta$population)*100
+
+
+plot_malta <- malta %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇲🇹") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_malta_1 = plot_malta + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_malta_1 = plot_malta_1 + ggtitle("Population Vaccinated \n on Malta (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_malta_percentage <- malta %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇲🇹") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_malta_2 = plot_malta_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_malta_2 = plot_malta_2 + ggtitle("Population (%) Vaccinated \n on Malta") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_malta_interactive <- plot_ly(x = malta$date, y = malta$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_malta_interactive2 <- plot_ly(x = malta$date, y = malta$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_malta_interactive3 <- plot_ly(x = malta$date, y = malta$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_malta_interactive,plot_malta_interactive2,plot_malta_interactive3, nrows=1)
+```
+
+### Mexico - MX
+```{r, warning = FALSE}
+mexico <- vaccinations[grep("MEX", vaccinations$iso_code),]
+mexico_world_pop <- world_population[grep("Mexico", world_population$Country),]
+
+mexico$population = mexico_world_pop$Population
+mexico$percentage = (mexico$people_vaccinated/mexico$population)*100
+
+
+plot_mexico <- mexico %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇲🇽") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_mexico_1 = plot_mexico + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_mexico_1 = plot_mexico_1 + ggtitle("Population Vaccinated \n on Mexico ") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_mexico_percentage <- mexico %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇲🇽") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_mexico_2 = plot_mexico_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_mexico_2 = plot_mexico_2 + ggtitle("Population (%) Vaccinated \n on Mexico (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_mexico_interactive <- plot_ly(x = mexico$date, y = mexico$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_mexico_interactive2 <- plot_ly(x = mexico$date, y = mexico$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_mexico_interactive3 <- plot_ly(x = mexico$date, y = mexico$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_mexico_interactive,plot_mexico_interactive2,plot_mexico_interactive3, nrows=1)
+```
+
+### Norway - NO
+```{r, warning = FALSE}
+norway <- vaccinations[grep("NOR", vaccinations$iso_code),]
+norway_world_pop <- world_population[grep("Norway", world_population$Country),]
+
+norway$population = norway_world_pop$Population
+norway$percentage = (norway$people_vaccinated/norway$population)*100
+
+
+plot_norway <- norway %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇳🇴") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_norway_1 = plot_norway + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_norway_1 = plot_norway_1 + ggtitle("Population Vaccinated \n on Norway (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_norway_percentage <- norway %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇳🇴") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_norway_2 = plot_norway_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_norway_2 = plot_norway_2 + ggtitle("Population (%) Vaccinated \n on Morway (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_norway_interactive <- plot_ly(x = norway$date, y = norway$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_norway_interactive2 <- plot_ly(x = norway$date, y = norway$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_norway_interactive3 <- plot_ly(x = norway$date, y = norway$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_norway_interactive,plot_norway_interactive2,plot_norway_interactive3, nrows=1)
+```
+
+### Oman - OM
+```{r, warning = FALSE}
+oman <- vaccinations[grep("OMN", vaccinations$iso_code),]
+oman_world_pop <- world_population[grep("Oman", world_population$Country),]
+
+oman$population = oman_world_pop$Population
+oman$percentage = (oman$people_vaccinated/oman$population)*100
+
+
+plot_oman <- oman %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇴🇲") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_oman_1 = plot_oman + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_oman_1 = plot_oman_1 + ggtitle("Population Vaccinated \n on Oman(2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_oman_percentage <- oman %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇴🇲") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_oman_2 = plot_oman_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_oman_2 = plot_oman_2 + ggtitle("Population (%) Vaccinated \n on Oman (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_oman_interactive <- plot_ly(x = oman$date, y = oman$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_oman_interactive2 <- plot_ly(x = oman$date, y = oman$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_oman_interactive3 <- plot_ly(x = oman$date, y = oman$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_oman_interactive,plot_oman_interactive2,plot_oman_interactive3, nrows=1)
+```
+
+### Panama - PA
+```{r, warning = FALSE}
+panama <- vaccinations[grep("PAN", vaccinations$iso_code),]
+panama_world_pop <- world_population[grep("Panama", world_population$Country),]
+
+panama$population = panama_world_pop$Population
+panama$percentage = (panama$people_vaccinated/panama$population)*100
+
+
+plot_panama <- panama %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇵🇦") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_panama_1 = plot_panama + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_panama_1 = plot_panama_1 + ggtitle("Population  Vaccinated \n on Panama (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_panama_percentage <- panama %>%
+  ggplot( aes(x=date, y = percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇵🇦") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_panama_2 = plot_panama_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_panama_2 = plot_panama_2 + ggtitle("Population (%) Vaccinated \n on Panama (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_panama_interactive <- plot_ly(x = panama$date, y = panama$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_panama_interactive2 <- plot_ly(x = panama$date, y = panama$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_panama_interactive3 <- plot_ly(x = panama$date, y = panama$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_panama_interactive,plot_panama_interactive2,plot_panama_interactive3, nrows=1)
+```
+
+### Poland - PL
+```{r, warning = FALSE}
+poland <- vaccinations[grep("POL", vaccinations$iso_code),]
+poland_world_pop <- world_population[grep("Poland", world_population$Country),]
+
+poland$population = poland_world_pop$Population
+poland$percentage = (poland$people_vaccinated/poland$population)*100
+
+
+plot_poland <- poland %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇵🇱") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_poland_1 = plot_poland + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_poland_1 = plot_poland_1 + ggtitle("Population  Vaccinated \n on Poland (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_poland_percentage <- poland %>%
+  ggplot( aes(x=date, y = percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇵🇱") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_poland_2 = plot_poland_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_poland_2 = plot_poland_2 + ggtitle("Population (%) Vaccinated \n on Poland (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_poland_interactive <- plot_ly(x = poland$date, y = poland$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_poland_interactive2 <- plot_ly(x = poland$date, y = poland$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_poland_interactive3 <- plot_ly(x = poland$date, y = poland$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_poland_interactive,plot_poland_interactive2,plot_poland_interactive3, nrows=1)
+```
+
+### Portugal - PT
+```{r, warning = FALSE}
+portugal <- vaccinations[grep("PRT", vaccinations$iso_code),]
+portugal_world_pop <- world_population[grep("Portugal", world_population$Country),]
+
+portugal$population = portugal_world_pop$Population
+portugal$percentage = (portugal$people_vaccinated/portugal$population)*100
+
+
+plot_portugal <- portugal %>%
+  ggplot( aes(x=date, y=people_vaccinated, group=1)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇵🇹") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_portugal_1 = plot_portugal + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_portugal_1 = plot_portugal_1 + ggtitle("Population Vaccinated \n on Portugal (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_portugal_percentage <- portugal %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇵🇹") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_portugal_2 = plot_portugal_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_portugal_2 = plot_portugal_2 + ggtitle("Population (%) Vaccinated \n on Portugal (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_portugal_interactive <- plot_ly(x = portugal$date, y = portugal$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_portugal_interactive2 <- plot_ly(x = portugal$date, y = portugal$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_portugal_interactive3 <- plot_ly(x = portugal$date, y = portugal$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_portugal_interactive,plot_portugal_interactive2,plot_portugal_interactive3, nrows=1)
+```
+
+### Romania - RO
+```{r, warning = FALSE}
+romania <- vaccinations[grep("ROU", vaccinations$iso_code),]
+romania_world_pop <- world_population[grep("Romania", world_population$Country),]
+
+romania$population = romania_world_pop$Population
+romania$percentage = (romania$people_vaccinated/romania$population)*100
+
+
+plot_romania <- romania %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇷🇴") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_romania_1 = plot_romania + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_romania_1 = plot_romania_1 + ggtitle("Vaccination on \n Romania(2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_romania_percentage <- romania %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇷🇴") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_romania_2 = plot_romania_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_romania_2 = plot_romania_2 + ggtitle("Vaccination on \n Romania") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_romania_interactive <- plot_ly(x = romania$date, y = romania$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_romania_interactive2 <- plot_ly(x = romania$date, y = romania$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_romania_interactive3 <- plot_ly(x = romania$date, y = romania$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_romania_interactive,plot_romania_interactive2,plot_romania_interactive3, nrows=1)
+```
+
+### Russia - RU
+```{r, warning = FALSE}
+russia <- vaccinations[grep("RUS", vaccinations$iso_code),]
+russia_world_pop <- world_population[grep("Russia", world_population$Country),]
+
+russia$population = russia_world_pop$Population
+russia$percentage = (russia$people_vaccinated/russia$population)*100
+
+
+plot_russia <- russia %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇷🇺") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_russia_1 = plot_russia + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_russia_1 = plot_russia_1 + ggtitle("Vaccination on \n Russia(2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_russia_percentage <- russia %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇷🇺") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_russia_2 = plot_russia_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_russia_2 = plot_russia_2 + ggtitle("Vaccination on \n Russia") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_russia_interactive <- plot_ly(x = russia$date, y = russia$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_russia_interactive2 <- plot_ly(x = russia$date, y = russia$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_russia_interactive3 <- plot_ly(x = russia$date, y = russia$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_russia_interactive,plot_russia_interactive2,plot_russia_interactive3, nrows=1)
+```
+
+### Saudi Arabia - SA
+```{r, warning = FALSE}
+saudi_arabia <- vaccinations[grep("SAU", vaccinations$iso_code),]
+saudi_arabia_world_pop <- world_population[grep("Saudi Arabia", world_population$Country),]
+
+saudi_arabia$population = saudi_arabia_world_pop$Population
+saudi_arabia$percentage = (saudi_arabia$people_vaccinated/saudi_arabia$population)*100
+
+
+plot_saudi_arabia <- saudi_arabia %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇦") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_saudi_arabia_1 = plot_saudi_arabia + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_saudi_arabia_1 = plot_saudi_arabia_1 + ggtitle("Vaccination on \n Saudi Arabia (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_saudi_arabia_percentage <- saudi_arabia %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇦") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_saudi_arabia_2 = plot_saudi_arabia_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_saudi_arabia_2 = plot_saudi_arabia_2 + ggtitle("Vaccination on \n Saudi Arabia (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_saudi_arabia_interactive <- plot_ly(x = saudi_arabia$date, y = saudi_arabia$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_saudi_arabia_interactive2 <- plot_ly(x = saudi_arabia$date, y = saudi_arabia$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_saudi_arabia_interactive3 <- plot_ly(x = saudi_arabia$date, y = saudi_arabia$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_saudi_arabia_interactive,plot_saudi_arabia_interactive2,plot_saudi_arabia_interactive3, nrows=1)
+```
+
+### Serbia - RS
+```{r, warning = FALSE}
+serbia <- vaccinations[grep("SRB", vaccinations$iso_code),]
+serbia_world_pop <- world_population[grep("Serbia", world_population$Country),]
+
+serbia$population = serbia_world_pop$Population
+serbia$percentage = (serbia$people_vaccinated/serbia$population)*100
+
+
+plot_serbia <- serbia %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇷🇸") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_serbia_1 = plot_serbia + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_serbia_1 = plot_serbia_1 + ggtitle("Vaccination on \n Serbia (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_serbia_percentage <- serbia %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇷🇸") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_serbia_2 = plot_serbia_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_serbia_2 = plot_serbia_2 + ggtitle("Vaccination on \n Serbia (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_serbia_interactive <- plot_ly(x = serbia$date, y = serbia$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_serbia_interactive2 <- plot_ly(x = serbia$date, y = serbia$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_serbia_interactive3 <- plot_ly(x = serbia$date, y = serbia$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_serbia_interactive,plot_serbia_interactive2,plot_serbia_interactive3, nrows=1)
+```
+
+### Seychelles - SC
+```{r, warning = FALSE}
+seychelles <- vaccinations[grep("SYC", vaccinations$iso_code),]
+seychelles_world_pop <- world_population[grep("Seychelles", world_population$Country),]
+
+seychelles$population = seychelles_world_pop$Population
+seychelles$percentage = (seychelles$people_vaccinated/seychelles$population)*100
+
+
+plot_seychelles <- seychelles %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇨") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_seychelles_1 = plot_seychelles + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_seychelles_1 = plot_seychelles_1 + ggtitle("Vaccination on \n Seychelles (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_seychelles_percentage <- seychelles %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇨") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_seychelles_2 = plot_seychelles_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_seychelles_2 = plot_seychelles_2 + ggtitle("Vaccination on \n Seychelles (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_seychelles_interactive <- plot_ly(x = seychelles$date, y = seychelles$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_seychelles_interactive2 <- plot_ly(x = seychelles$date, y = seychelles$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_seychelles_interactive3 <- plot_ly(x = seychelles$date, y = seychelles$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_seychelles_interactive,plot_seychelles_interactive2,plot_seychelles_interactive3, nrows=1)
+```
+
+### Slovakia - SK
+```{r, warning = FALSE}
+slovakia <- vaccinations[grep("SVK", vaccinations$iso_code),]
+slovakia_world_pop <- world_population[grep("Slovakia", world_population$Country),]
+
+slovakia$population = slovakia_world_pop$Population
+slovakia$percentage = (slovakia$people_vaccinated/slovakia$population)*100
+
+
+plot_slovakia <- slovakia %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇰") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_slovakia_1 = plot_slovakia + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_slovakia_1 = plot_slovakia_1 + ggtitle("Vaccination on \n Slovakia (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_slovakia_percentage <- slovakia %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇰") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_slovakia_2 = plot_slovakia_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_slovakia_2 = plot_slovakia_2 + ggtitle("Vaccination on \n Slovakia (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_slovakia_interactive <- plot_ly(x = slovakia$date, y = slovakia$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_slovakia_interactive2 <- plot_ly(x = slovakia$date, y = slovakia$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_slovakia_interactive3 <- plot_ly(x = slovakia$date, y = slovakia$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_slovakia_interactive,plot_slovakia_interactive2,plot_slovakia_interactive3 , nrows=1)
+```
+
+### Slovenia - SI
+```{r, warning = FALSE}
+slovenia <- vaccinations[grep("SVN", vaccinations$iso_code),]
+slovenia_world_pop <- world_population[grep("Slovenia", world_population$Country),]
+
+slovenia$population = slovenia_world_pop$Population
+slovenia$percentage = (slovenia$people_vaccinated/slovenia$population)*100
+
+
+plot_slovenia <- slovenia %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇮") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_slovenia_1 = plot_slovenia + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_slovenia_1 = plot_slovenia_1 + ggtitle("Vaccination on \n Slovenia (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_slovenia_percentage <- slovenia %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇮") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_slovenia_2 = plot_slovenia_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_slovenia_2 = plot_slovenia_2 + ggtitle("Vaccination on \n Slovenia (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_slovenia_interactive <- plot_ly(x = slovenia$date, y = slovenia$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_slovenia_interactive2 <- plot_ly(x = slovenia$date, y = slovenia$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_slovenia_interactive3 <- plot_ly(x = slovenia$date, y = slovenia$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_slovenia_interactive,plot_slovenia_interactive2,plot_slovenia_interactive3, nrows=1)
+```
+
+### Spain - ES
+```{r, warning = FALSE}
+spain <- vaccinations[grep("ESP", vaccinations$iso_code),]
+spain_world_pop <- world_population[grep("Spain", world_population$Country),]
+
+spain$population = spain_world_pop$Population
+spain$percentage = (spain$people_vaccinated/spain$population)*100
+
+
+plot_spain <- spain %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇪🇸") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_spain_1 = plot_spain + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_spain_1 = plot_spain_1 + ggtitle("Vaccination on \n Spain (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_spain_percentage <- spain %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇪🇸") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_spain_2 = plot_spain_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_spain_2 = plot_spain_2 + ggtitle("Vaccination on \n Spain (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_spain_interactive <- plot_ly(x = spain$date, y = spain$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_spain_interactive2 <- plot_ly(x = spain$date, y = spain$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_spain_interactive3 <- plot_ly(x = spain$date, y = spain$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_spain_interactive,plot_spain_interactive2,plot_spain_interactive3, nrows=1)
+```
+
+### Sweden - SE
+```{r, warning = FALSE}
+sweden <- vaccinations[grep("SWE", vaccinations$iso_code),]
+sweden_world_pop <- world_population[grep("Sweden", world_population$Country),]
+
+sweden$population = sweden_world_pop$Population
+sweden$percentage = (sweden$people_vaccinated/sweden$population)*100
+
+
+plot_sweden <- sweden %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇪") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_sweden_1 = plot_sweden + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_sweden_1 = plot_sweden_1 + ggtitle("Vaccination on \n Sweden (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_sweden_percentage <- sweden %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇸🇪") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_sweden_2 = plot_sweden_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_sweden_2 = plot_sweden_2 + ggtitle("Vaccination on \n Sweden (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_sweden_interactive <- plot_ly(x = sweden$date, y = sweden$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_sweden_interactive2 <- plot_ly(x = sweden$date, y = sweden$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_sweden_interactive3 <- plot_ly(x = sweden$date, y = sweden$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_sweden_interactive,plot_sweden_interactive2,plot_sweden_interactive3, nrows=1)
+```
+
+### Turkey - TR
+```{r, warning = FALSE}
+turkey <- vaccinations[grep("TUR", vaccinations$iso_code),]
+turkey_world_pop <- world_population[grep("Turkey", world_population$Country),]
+
+turkey$population = turkey_world_pop$Population
+turkey$percentage = (turkey$people_vaccinated/turkey$population)*100
+
+
+plot_turkey <- turkey %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇹🇷") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_turkey_1 = plot_turkey + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_turkey_1 = plot_turkey_1 + ggtitle("Vaccination on \n Turkey (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_turkey_percentage <- turkey %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇹🇷") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_turkey_2 = plot_turkey_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_turkey_2 = plot_turkey_2 + ggtitle("Vaccination on \n Turkey (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_turkey_interactive <- plot_ly(x = turkey$date, y = turkey$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_turkey_interactive2 <- plot_ly(x = turkey$date, y = turkey$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_turkey_interactive3 <- plot_ly(x = turkey$date, y = turkey$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_turkey_interactive,plot_turkey_interactive2,plot_turkey_interactive3, nrows=1)
+```
+
+### United Arab Emirates - AE
+```{r, warning = FALSE}
+uae <- vaccinations[grep("ARE", vaccinations$iso_code),]
+uae_world_pop <- world_population[grep("United Arab Emirates", world_population$Country),]
+
+uae$population = uae_world_pop$Population
+uae$percentage = (uae$people_vaccinated/uae$population)*100
+
+
+plot_uae <- uae %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇦🇪") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_uae_1 = plot_uae + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_uae_1 = plot_uae_1 + ggtitle("Vaccination on \n UAE (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_uae_percentage <- uae %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇦🇪") +
+    scale_y_continuous(breaks = seq(0, 40, 5),limits = c(0, 40))+
+    theme_wsj()
+
+plot_uae_2 = plot_uae_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_uae_2 = plot_uae_2 + ggtitle("Vaccination on \n UAE (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_uae_interactive <- plot_ly(x = uae$date, y = uae$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_uae_interactive2 <- plot_ly(x = uae$date, y = uae$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_uae_interactive3 <- plot_ly(x = uae$date, y = uae$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_uae_interactive,plot_uae_interactive2,plot_uae_interactive3, nrows=1)
+```
+
+### United Kingdom - UK
+```{r, warning = FALSE}
+uk <- vaccinations[grep("GBR", vaccinations$iso_code),]
+uk_world_pop <- world_population[grep("United Kingdom", world_population$Country),]
+
+uk$population = uk_world_pop$Population
+uk$percentage = (uk$people_vaccinated/uk$population)*100
+
+
+plot_uk <- uk %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇬🇧") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_uk_1 = plot_uk + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_uk_1 = plot_uk_1 + ggtitle("Vaccination on \n United Kingdom (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_uk_percentage <- uk %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇬🇧") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_uk_2 = plot_uk_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_uk_2 = plot_uk_2 + ggtitle("Vaccination on \n UK (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_uk_interactive <- plot_ly(x = uk$date, y = uk$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_uk_interactive2 <- plot_ly(x = uk$date, y = uk$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_uk_interactive3 <- plot_ly(x = uk$date, y = uk$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_uk_interactive,plot_uk_interactive2,plot_uk_interactive3 , nrows=1)
+```
+
+### United States of America - US
+```{r, warning = FALSE}
+usa <- vaccinations[grep("USA", vaccinations$iso_code),]
+usa_world_pop <- world_population[grep("United States", world_population$Country),]
+
+usa$population = usa_world_pop$Population
+usa$percentage = (usa$people_vaccinated/usa$population)*100
+
+
+plot_usa <- usa %>%
+  ggplot( aes(x=date, y=people_vaccinated)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇺🇸") +
+    scale_y_continuous(breaks = seq(0, 10000000, 2000000),limits = c(0, 10000000))+
+    theme_wsj()
+    
+plot_usa_1 = plot_usa + theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_usa_1 = plot_usa_1 + ggtitle("Vaccination on \n USA (2021)") + 
+    theme(plot.title = element_text(size = 10, face = "bold"))
+
+plot_usa_percentage <- usa %>%
+  ggplot( aes(x=date, y=percentage)) +
+    geom_point()+
+    geom_line(color="#69b3a2") +
+    xlab("🇺🇸") +
+    scale_y_continuous(breaks = seq(0, 20, 2),limits = c(0, 20))+
+    theme_wsj()
+
+plot_usa_2 = plot_usa_percentage+ theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=45))
+plot_usa_2 = plot_usa_2 + ggtitle("Vaccination on \n USA (2021)") + 
+    theme(plot.title = element_text(size = 7, face = "bold"))
+
+plot_usa_interactive <- plot_ly(x = usa$date, y = usa$people_vaccinated, type="scatter", mode="markers", fill = "tozeroy")
+
+plot_usa_interactive2 <- plot_ly(x = usa$date, y = usa$percentage, type="scatter", mode="markers", fill = "tozeroy")
+plot_usa_interactive3 <- plot_ly(x = usa$date, y = usa$daily_vaccinations, type="scatter", mode="markers", fill = "tozeroy")
+
+plotly::subplot(plot_usa_interactive,plot_usa_interactive2,plot_usa_interactive3, nrows=1)
+```
+
+## Summarizing Plots
+
+### Percentage of population vaccinated
+```{r, warning = FALSE}
+x1 = grid.arrange(plot_argentina_2,plot_austria_2,plot_bahrain_2,plot_belgium_2,plot_bulgaria_2, plot_chile_2,nrow=2)
+```
+
+```{r, warning = FALSE}
+x2 = grid.arrange(plot_china_2 , plot_costa_rica_2, plot_croatia_2, plot_czech_rep_2, plot_denmark_2, plot_estonia_2,nrow=2)
+```
+
+```{r, warning = FALSE}
+x3 = grid.arrange(plot_finland_2 , plot_france_2 , plot_germany_2,plot_gibraltar_2 , plot_greece_2, plot_hungary_2 , nrow = 2)
+```
+
+```{r, warning = FALSE}
+x4 = grid.arrange(plot_iceland_2 , plot_india_2 , plot_ireland_2,plot_israel_2 , plot_italy_2, plot_latvia_2 , nrow = 2)
+```
+
+```{r, warning = FALSE}
+x5 = grid.arrange(plot_lithuania_2 , plot_luxembourg_2 , plot_malta_2,plot_mexico_2 , plot_norway_2, plot_oman_2, nrow = 2)
+```
+
+```{r, warning = FALSE}
+x6 = grid.arrange(plot_poland_2 , plot_portugal_2 , plot_romania_2,plot_saudi_arabia_2, plot_serbia_2, plot_seychelles_1 , nrow = 2)
+```
+
+```{r, warning = FALSE}
+x7 = grid.arrange(plot_slovakia_2 , plot_slovenia_2 , plot_spain_2,plot_sweden_2 , plot_turkey_2, plot_uae_2 , plot_uk_2 , plot_usa_2, nrow = 2)
+```
+
+## Less Vaccinated Country in terms of Population (% of Population)
+```{r, warning = FALSE}
+vaccinations1 = vaccinations
+vaccinations1$percentage[vaccinations$country == "Argentina"] <- max(argentina$percentage , na.rm = TRUE)
+vaccinations1$percentage[vaccinations$country == "Austria"] <- max(austria$percentage , na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Bahrain"] <- max(bahrain$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Belgium"] <- max(belgium$percentage, na.rm = TRUE)
+vaccinations1$percentage[vaccinations$country == "Brazil"] <- max(brazil$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Bulgaria"] <- max(bulgaria$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Canada"] <- max(canada$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Chile"] <- max(chile$percentage, na.rm = TRUE)
+vaccinations1$percentage[vaccinations$country == "China"] <- max(china$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Costa Rica"] <- max(costa_rica$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Croatia"] <- max(croatia$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Cyprus"] <- max(cyprus$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Czech"] <- max(czech_rep$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Denmark"] <- max(denmark$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Estonia"] <- max(estonia$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Finland"] <- max(finland$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "France"] <- max(france$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Germany"] <- max(germany$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Gibraltar"] <- max(gibraltar$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Greece"] <- max(greece$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Hungary"] <- max(hungary$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Iceland"] <- max(iceland$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "India"] <- max(india$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Indonesia"] <- max(indonesia$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Ireland"] <- max(ireland$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Israel"] <- max(israel$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Italy"] <- max(italy$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Kuwait"] <- max(kuwait$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Latvia"] <- max(latvia$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Lithuania"] <- max(lithuania$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Luxembourg"] <- max(luxembourg$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Malta"] <- max(malta$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Mexico"] <- max(mexico$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Norway"] <- max(norway$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Oman"] <- max(oman$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Panama"] <- max(panama$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Poland"] <- max(poland$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Portugal"] <- max(portugal$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Romania"] <- max(romania$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Russia"] <- max(russia$percentage, na.rm = TRUE)
+vaccinations1$percentage[vaccinations$country == "Saudi Arabia"] <- max(saudi_arabia$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Serbia"] <- max(serbia$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Seychelles"] <- max(seychelles$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Slovakia"] <- max(slovakia$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Slovenia"] <- max(slovenia$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Spain"] <- max(spain$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Sweden"] <- max(sweden$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "Turkey"] <- max(turkey$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "UAE"] <- max(uae$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "United Kingdom"] <- max(uk$percentage, na.rm = TRUE) 
+vaccinations1$percentage[vaccinations$country == "United States"] <- max(usa$percentage, na.rm = TRUE) 
+```
+
+```{r, warning = FALSE}
+x =select(vaccinations1, country, percentage)
+
+y = unique(x) %>% drop_na
+
+yincr = y %>% arrange(y$percentage)
+yincr = yincr[!grepl("-Inf", yincr$percentage),]
+
+
+kable1 =head(yincr,7)
+kable1 = kbl(kable1)
+kable1
+```
+
+## Most Vaccinated Country in terms of Population (% of Population)
+```{r, warning = FALSE}
+ydesc = y %>% arrange(y$percentage ,descending=TRUE)
+
+kable2 =tail(ydesc,7)
+kable2 = kbl(kable2)
+kable2
+```
+
+## Country Population vaccinated at least once (in Map)
+
+#### Install necessary packages
+```{r, warning = FALSE, message= FALSE}
+library(ggplot2)
+install.packages("ggmap")
+library(ggmap)
+install.packages("maps")
+library(maps)
+install.packages("mapdata")
+library(mapdata)
+```
+
+```{r, warning = FALSE}
+world <- map_data("world")
+
+world$percentage = NA
+world$percentage[world$region == "Argentina"] <- max(argentina$percentage, na.rm = TRUE) 
+world$percentage[world$region == "Austria"] <- max(austria$percentage, na.rm = TRUE) 
+world$percentage[world$region == "Bahrain"] <- max(bahrain$percentage, na.rm = TRUE) 
+world$percentage[world$region == "Belgium"] <- max(belgium$percentage, na.rm = TRUE) 
+world$percentage[world$region == "Brazil"] <- max(brazil$percentage, na.rm = TRUE)
+world$percentage[world$region == "Bulgaria"] <- max(bulgaria$percentage, na.rm = TRUE) 
+world$percentage[world$region == "Canada"] <- max(canada$percentage, na.rm = TRUE) 
+world$percentage[world$region == "Chile"] <- max(chile$percentage, na.rm = TRUE)
+world$percentage[world$region == "China"] <- max(china$percentage, na.rm = TRUE)
+world$percentage[world$region == "Costa Rica"] <- max(costa_rica$percentage, na.rm = TRUE)
+world$percentage[world$region == "Croatia"] <- max(croatia$percentage, na.rm = TRUE)
+world$percentage[world$region == "Cyprus"] <- max(cyprus$percentage, na.rm = TRUE)
+world$percentage[world$region == "Denmark"] <- max(denmark$percentage, na.rm = TRUE)
+world$percentage[world$region == "Estonia"] <- max(estonia$percentage, na.rm = TRUE)
+world$percentage[world$region == "Finland"] <- max(finland$percentage, na.rm = TRUE)
+world$percentage[world$region == "France"] <- max(france$percentage, na.rm = TRUE)
+world$percentage[world$region == "Germany"] <- max(germany$percentage, na.rm = TRUE)
+world$percentage[world$region == "Gibraltar"] <- max(gibraltar$percentage, na.rm = TRUE)
+world$percentage[world$region == "Greece"] <- max(greece$percentage, na.rm = TRUE)
+world$percentage[world$region == "Hungary"] <- max(hungary$percentage, na.rm = TRUE)
+world$percentage[world$region == "Iceland"] <- max(iceland$percentage, na.rm = TRUE)
+world$percentage[world$region == "India"] <- max(india$percentage, na.rm = TRUE)
+world$percentage[world$region == "Indonesia"] <- max(indonesia$percentage, na.rm = TRUE)
+world$percentage[world$region == "Ireland"] <- max(ireland$percentage, na.rm = TRUE)
+world$percentage[world$region == "Israel"] <- max(israel$percentage, na.rm = TRUE)
+world$percentage[world$region == "Italy"] <- max(italy$percentage, na.rm = TRUE)
+world$percentage[world$region == "Kuwait"] <- max(kuwait$percentage, na.rm = TRUE)
+world$percentage[world$region == "Latvia"] <- max(latvia$percentage, na.rm = TRUE)
+world$percentage[world$region == "Lithuania"] <- max(lithuania$percentage, na.rm = TRUE)
+world$percentage[world$region == "Luxembourg"] <- max(luxembourg$percentage, na.rm = TRUE)
+world$percentage[world$region == "Malta"] <- max(malta$percentage, na.rm = TRUE)
+world$percentage[world$region == "Mexico"] <- max(mexico$percentage, na.rm = TRUE)
+world$percentage[world$region == "Norway"] <- max(norway$percentage, na.rm = TRUE)
+world$percentage[world$region == "Oman"] <- max(oman$percentage, na.rm = TRUE)
+world$percentage[world$region == "Panama"] <- max(panama$percentage, na.rm = TRUE)
+world$percentage[world$region == "Poland"] <- max(poland$percentage, na.rm = TRUE)
+world$percentage[world$region == "Portugal"] <- max(portugal$percentage, na.rm = TRUE)
+world$percentage[world$region == "Romania"] <- max(romania$percentage, na.rm = TRUE)
+world$percentage[world$region == "Russia"] <- max(russia$percentage, na.rm = TRUE)
+world$percentage[world$region == "Saudi Arabia"] <- max(saudi_arabia$percentage, na.rm = TRUE)
+world$percentage[world$region == "Serbia"] <- max(serbia$percentage, na.rm = TRUE)
+world$percentage[world$region == "Seychelles"] <- max(seychelles$percentage, na.rm = TRUE)
+world$percentage[world$region == "Slovakia"] <- max(slovakia$percentage, na.rm = TRUE)
+world$percentage[world$region == "Slovenia"] <- max(slovenia$percentage, na.rm = TRUE)
+world$percentage[world$region == "Spain"] <- max(spain$percentage, na.rm = TRUE)
+world$percentage[world$region == "Sweden"] <- max(sweden$percentage, na.rm = TRUE)
+world$percentage[world$region == "United Arab Emirates"] <- max(uae$percentage, na.rm = TRUE)
+world$percentage[world$region == "USA"] <- max(usa$percentage, na.rm = TRUE)
+world$percentage[world$region == "UK"] <- max(uk$percentage, na.rm = TRUE)
+
+ca_base = ggplot(data = world, mapping = aes(x = long, y = lat , group = group)) + 
+  coord_fixed(1.3)
+```
+
+```{r, warning = FALSE}
+elbow_room1 = ca_base + 
+      geom_polygon(data = world, aes(fill = percentage), color = "black") +
+      geom_polygon(color = "black", fill = NA) +
+      theme_bw()
+
+elbow_room1 + scale_fill_gradient(low = "light blue", high = "dark blue", na.value = NA)
+```
+
